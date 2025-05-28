@@ -1,7 +1,7 @@
 import pymupdf4llm
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-def ingester(input_file_path: str) -> list:
+def ingest_pdf(input_file_path: str) -> list:
     """
     Function to process a PDF document and split it into manageable text chunks.
     This function uses pymupdf4llm to convert the PDF to markdown and then splits
@@ -22,7 +22,7 @@ def ingester(input_file_path: str) -> list:
     return documents
 
 if __name__ == "__main__":
-    documents = ingester("samples/sample.pdf")
+    documents = ingest_pdf("samples/sample.pdf")
     for i, doc in enumerate(documents):
         print(f"\n--- Paragraph {i+1} ---")
         print(doc.page_content)
