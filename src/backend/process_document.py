@@ -1,10 +1,15 @@
+import os
+
 import psycopg
 
 from ingester import ingest_pdf
 from embedder import embed_text
 
 def insert_document(content, embedding):
-    with psycopg.connect("dbname=vector_db user=sheep") as conn:
+    with psycopg.connect(
+        dbname=os.getenv("DEV_DB_NAME"),
+        user=os.getenv("DEV_DB_USER"),
+    ) as conn:
         with conn.cursor() as cur:
             # The embedding vector is passed as a Python list,
             # psycopg will convert it to PostgreSQL vector automatically.
