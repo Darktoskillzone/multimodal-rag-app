@@ -4,10 +4,13 @@ from pathlib import Path
 
 import psycopg
 
-from .embedder import embed_text
+from backend.embedder import Embedder
 
 env_path = Path(__file__).resolve().parents[2] / ".env"
 dotenv.load_dotenv(dotenv_path=env_path)
+
+# Debug: print to confirm it’s loading
+print(f"Loaded DB_NAME: {os.getenv('DEV_DB_NAME')}")
 
 def get_top_k_similar_docs(query_embedding, k=5):
     conn = psycopg.connect(
@@ -32,8 +35,9 @@ def get_top_k_similar_docs(query_embedding, k=5):
     return results
 
 if __name__ == "__main__":
+    embedder = Embedder("BAAI/bge-base-en-v1.5")
     # Example query embedding (should be a list of floats)
-    query_embedding = embed_text("acroread").tolist()
+    query_embedding = embedder.embed("acroread").tolist()
 
     print("Embedding type:", type(query_embedding))
     print("Length:", len(query_embedding))

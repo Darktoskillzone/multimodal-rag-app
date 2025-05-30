@@ -1,33 +1,21 @@
 import os
 
-import psycopg
-
-from ingester import ingest_pdf
-from embedder import embed_text
-
-def insert_document(content, embedding):
-    with psycopg.connect(
-        dbname=os.getenv("DEV_DB_NAME"),
-        user=os.getenv("DEV_DB_USER"),
-    ) as conn:
-        with conn.cursor() as cur:
-            # The embedding vector is passed as a Python list,
-            # psycopg will convert it to PostgreSQL vector automatically.
-            cur.execute(
-                "INSERT INTO documents (content, embedding) VALUES (%s, %s)",
-                (content, embedding)
-            )
-        conn.commit()
+from backend.embedder import Embedder
+from backend.processor import Processor
 
 def process_document(input_file_path: str):
+    embedder = Embedder("BAAI/bge-base-en-v1.5")
+    processor = Processor()
     # Example usage of ingesting a PDF and embedding its content
-    documents = ingest_pdf(input_file_path)
+    documents = processor.ingest(input_file_path)
     
     for doc in documents:
         # Embed the text content of the document
-        embedding = embed_text(doc.page_content)  # Get the first embedding
-        insert_document(doc.page_content, embedding.tolist())
+        embedding = embedder.embed(doc.page_content)  # Get the first embedding
+        processor.send_to_db(doc.page_content, embedding.tolist())
 
 if __name__ == "__main__":
-    process_document("samples/sample.pdf")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(base_dir, "samples", "sample.pdf")
+    process_document(file_path)
     print("Inserted document with embedding.")
