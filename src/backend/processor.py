@@ -14,8 +14,8 @@ dotenv.load_dotenv(dotenv_path=env_path)
 
 # Ideally this will be a class that can be extended for different types of documents
 class Processor:
-    def __init__(self):
-        self.embedder = Embedder("BAAI/bge-base-en-v1.5")
+    def __init__(self, embedding_model_name: str = "BAAI/bge-base-en-v1.5"):
+        self.embedder = Embedder(embedding_model_name)
     def ingest(self, input_file_path: str) -> list:
         # Returns list of documents/chunks from unprocessed files
         """
@@ -37,13 +37,13 @@ class Processor:
 
         return documents
     
-    def embed(self, chunks: list) -> list:
-        return self.embedder.embed(chunks)
+    def send_to_db(self, chunks: list):
+        """s
+        Function to generate chunk embeddings and send them to the database.
+        """
+
+        chunk_embeddings = self.embedder.embed(chunks)
     
-    def send_to_db(self, content: list, embedding: list):
-        """
-        Function to send processed documents to the database.
-        """
         with psycopg.connect(
             dbname=os.getenv("DEV_DB_NAME"),
             user=os.getenv("DEV_DB_USER"),
@@ -53,12 +53,12 @@ class Processor:
                 # psycopg will convert it to PostgreSQL vector automatically.
                 cur.execute(
                     "INSERT INTO documents (content, embedding) VALUES (%s, %s)",
-                    (content, embedding)
+                    (chunks, chunk_embeddings)
                 )
             conn.commit()
 
 if __name__ == "__main__":
-    processor = Processor()
+    processor = Processor("BAAI/bge-base-en-v1.5")
     base_dir = os.path.dirname(os.path.abspath(__file__))
     documents = processor.ingest(os.path.join(base_dir, "samples/sample.pdf"))
     # Print first 5 document chunks as examples

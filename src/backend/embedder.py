@@ -25,7 +25,7 @@ class Embedder:
             list: List of embeddings corresponding to the input text chunks.
         """
         # Get embeddings
-        embeddings = self.embedding_model.encode(chunks, normalize_embeddings=True)  # important for cosine similarity
+        embeddings = self.embedding_model.encode(chunks, normalize_embeddings=True).tolist()  # important for cosine similarity
         return embeddings
 
 if __name__ == "__main__":
@@ -38,6 +38,10 @@ if __name__ == "__main__":
     ]
 
     embeddings = embedder.embed(texts)
-    for i, embedding in enumerate(embeddings):
-        print(f"Embedding {i+1}: {embedding[:5]}...")  # Print first 5 dimensions of the embedding
-        print(f"Embedding {i+1} length: {len(embedding)} dimensions")
+    print("Embedding type:", type(embeddings))
+    print("Number of embeddings:", len(embeddings))
+    print("First embedding shape:", embeddings[0].shape if len(embeddings) > 0 else "No embeddings generated")
+    
+    # for i, embedding in enumerate(embeddings):
+    #     print(f"Embedding {i+1}: {embedding[:5]}...")  # Print first 5 dimensions of the embedding
+    #     print(f"Embedding {i+1} length: {len(embedding)} dimensions")
