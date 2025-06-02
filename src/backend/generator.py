@@ -29,7 +29,7 @@ class Generator:
             "You are an expert assistant.\n"
             "Context:\n{context}\n\n"
             "Query:\n{query}\n"
-            "Please provide a helpful response."
+            "Please provide a detailed and concise response."
         )
     
     def tokenize(self, text):

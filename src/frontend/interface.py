@@ -1,20 +1,21 @@
 import gradio as gr
 
-from ..backend.embedder import embed_text
-from ..backend.retrieve_document import get_top_k_similar_docs
-from ..backend.generate_output import build_prompt, generate_output, stream_output
+from backend.retriever import Retriever
+from backend.generator import Generator
 
 def most_similar_text(input_text):
-    return get_top_k_similar_docs(embed_text(input_text).tolist(), k=5)
+    query_embedding = retriever.embed(input_text).tolist()
+    return retriever.retrieve(query_embedding, k=5)
 
 def generate_response(input_text, history):
-    prompt = build_prompt(input_text, get_top_k_similar_docs(embed_text(input_text).tolist(), k=5))
+    generator = Generator("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", "BAAI/bge-base-en-v1.5")
     
     partial_message = ""
     # stream_output yields tokens or small chunks
-    for new_token in stream_output(prompt):
+    for new_token in generator.stream_output(input_text):
         partial_message += new_token
         yield partial_message
-    
-demo = gr.ChatInterface(fn=generate_response)
-demo.launch()
+
+if __name__ == "__main__":
+    demo = gr.ChatInterface(fn=generate_response)
+    demo.launch()
